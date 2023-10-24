@@ -56,3 +56,4 @@ src/alaki.html
 *.env
 *.csv
 venv/
+assets/metr_la/
