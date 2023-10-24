@@ -240,7 +240,7 @@ def update_bar_figure(selected_cause, aggregation):
     df_rs = df_filtered.set_index('dtg').groupby('cause')
     try:
         df_rs = df_rs.resample(aggregation).count()['lat'].rename('counts')
-    except:
+    except:  # noqa: E722
         df_rs = df_rs.resample('3M').count()['lat'].rename('counts')
 
     data_bar = []
