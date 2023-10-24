@@ -55,3 +55,4 @@ MANIFEST
 src/alaki.html
 *.env
 *.csv
+venv/
