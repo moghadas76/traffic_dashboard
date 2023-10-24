@@ -246,41 +246,7 @@ app.layout = html.Div(children=[
 ])
 
 
-@app.callback(
-    dash.dependencies.Output('bar-ts', 'figure'),
-    [dash.dependencies.Input('dropdown', 'value'),
-     dash.dependencies.Input('aggregation', 'value')])
-def update_bar_figure(selected_cause, aggregation):
-    """
-    Provide data to bar chart
-    """
 
-    # Select category
-    selected_cause_list = cause_options_map[selected_cause]
-    df_filtered = df[df.cause.isin(selected_cause_list)]
-
-    # Aggregate to given time bins
-    df_rs = df_filtered.set_index('dtg').groupby('cause')
-    try:
-        df_rs = df_rs.resample(aggregation).count()['lat'].rename('counts')
-    except:  # noqa: E722
-        df_rs = df_rs.resample('3M').count()['lat'].rename('counts')
-
-    data_bar = []
-    for cause in sorted(selected_cause_list):
-        data_bar.append(
-            go.Bar(
-                x=[str(x) for x in list(df_rs[cause].index)],
-                y=df_rs[cause].values,
-                marker=dict(
-                    color=cause_colors_map[cause]),
-                name=cause,
-            ))
-
-    return {
-        'data': data_bar,
-        'layout': layout_bar
-    }
 
 
 @app.callback(

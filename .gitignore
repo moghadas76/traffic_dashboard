@@ -55,5 +55,6 @@ MANIFEST
 src/alaki.html
 *.env
 *.csv
+*.pkl
 venv/
 assets/metr_la/
