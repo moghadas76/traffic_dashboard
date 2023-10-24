@@ -66,6 +66,25 @@ layout_map = go.Layout(
             'pad': 0},
 )
 
+layout_time_series = go.Layout( colorway=["#5E0DAC", '#FF4F00', '#375CB1', '#FF7400', '#FFF400', '#FF0056'],
+                    height=600,
+                    title=f"Closing prices",
+                    xaxis={"title": "Date",
+                           'rangeselector': {'buttons': list([{'count': 1, 'label': '1M',
+                                                               'step': 'month',
+                                                               'stepmode': 'backward'},
+                                                              {'count': 6, 'label': '6M',
+                                                               'step': 'month',
+                                                               'stepmode': 'backward'},
+                                                              {'step': 'all'}]
+                                              ),  
+                           },
+                           'rangeslider': {'visible': True}, 
+                           'type': 'date',            
+                    },
+                    yaxis={"title": "Price (USD)"},
+)
+
 # Define dashboard layout
 app.layout = html.Div(children=[
     html.H1(children='Dashboard Spatio-Temporal Data'),
@@ -120,15 +139,20 @@ app.layout = html.Div(children=[
             html.Div(
                 [
                     # Timeserie                
-                    dcc.Graph(id='timeseries'),
+                    dcc.Graph(id='timeseries', figure={
+                            'data': [go.Scatter(x=df.index, y=df["data"], mode='lines',)],
+                            "layout": layout_time_series
+                        }),
                     dcc.DatePickerRange(
                         id='date-picker',
                         min_date_allowed=df.index.min().date(),
                         max_date_allowed=df.index.max().date(),
                         initial_visible_month=df.index.min().date(),
                         start_date=df.index.min().date(),
-                        end_date=df.index.max().date()
-                    )
+                        end_date=df.index.max().date(),
+                        clearable=True,
+                    ),
+                    html.Div(id='text_output_range'),
                 ],
                 className='two columns',
                 style={'width': '48%'}
@@ -219,7 +243,6 @@ app.layout = html.Div(children=[
                 ),
             ],
     ),
-    html.Div(id='text_output_range'),
 ])
 
 
@@ -262,13 +285,12 @@ def update_bar_figure(selected_cause, aggregation):
 
 @app.callback(
     dash.dependencies.Output('text_output_range', 'children'),
-    [dash.dependencies.Input('bar-ts', 'relayoutData')])
-def update_output_text(relayoutData):
+    [dash.dependencies.Input('date-picker', 'start_date'), dash.dependencies.Input('date-picker', 'end_date')])
+def update_output_text(start_date, end_date):
     """
     Print selected time range
     """
-    time_range = get_time_range_from_relayoutData(relayoutData)
-    res = 'Selected range: {} - {}'.format(time_range[0], time_range[1])
+    res = 'Selected range: {} - {}'.format(start_date, end_date)
     return res
 
 
