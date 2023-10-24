@@ -1,9 +1,11 @@
 import os
 import json
 import dash
+import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 import dash_cytoscape as cyto
+import plotly.express as px
 
 
 from dotenv import load_dotenv
@@ -22,21 +24,12 @@ mapbox_access_token = os.getenv("mapbox_access_token")
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # Read sample data
-df = pd.read_csv('./assets/data_sample.csv')
-df['dtg'] = pd.to_datetime(df['dtg'])
-
-# Get start and end of sample data set
-df_start = pd.to_datetime(df.sort_values('dtg')['dtg'].values[0])
-df_end = pd.to_datetime(df.sort_values('dtg')['dtg'].values[-1])
+np.random.seed(1)
+df = pd.DataFrame(np.random.randn(100, 1), columns=['data'], 
+                  index=pd.date_range('2020-01-01', periods=100))
 
 # Get categories of sampel data set
-causes_all = sorted(list(df.cause.unique()))
-cause_options = [{'label': x, 'value': x} for x in ['All'] + causes_all]
-cause_options_map = {x: [x] for x in causes_all}
-cause_options_map['All'] = causes_all
 
-colors = ['red', 'green', 'black']
-cause_colors_map = dict(zip(causes_all, colors))
 
 # Layout definition for bar chart
 layout_bar = go.Layout(
@@ -83,7 +76,7 @@ app.layout = html.Div(children=[
                     html.Div(children="Select categories:"),
                     dcc.Dropdown(
                         id='dropdown',
-                        options=cause_options,
+                        options=list(range(207)),
                         value=['ALL'],
                         clearable=False,
                         multi=True
@@ -126,18 +119,23 @@ app.layout = html.Div(children=[
         [
             html.Div(
                 [
-                    dcc.Graph(
-                        id='bar-ts',
-                        style={'height': 580},
-                        config={
-                            'displayModeBar': False
-                        },
-                    ),
+                    # Timeserie                
+                    dcc.Graph(id='timeseries'),
+                    dcc.DatePickerRange(
+                        id='date-picker',
+                        min_date_allowed=df.index.min().date(),
+                        max_date_allowed=df.index.max().date(),
+                        initial_visible_month=df.index.min().date(),
+                        start_date=df.index.min().date(),
+                        end_date=df.index.max().date()
+                    )
                 ],
                 className='two columns',
                 style={'width': '48%'}
             ),
             html.Div(
+            # Map
+
                 [
                     dcc.Graph(
                         id='point-map',
@@ -154,6 +152,7 @@ app.layout = html.Div(children=[
         className='row'
     ),
     html.Div(
+        # Graph node/edge
         cyto.Cytoscape(
             id='cytoscape',
             elements=metr_la_network,
@@ -162,6 +161,7 @@ app.layout = html.Div(children=[
         )
     ),
     html.Div(
+            # Graph Actions
             className="four columns",
             children=[
                 dcc.Tabs(
@@ -388,6 +388,17 @@ def displaySelectedNodeData(data):
 )
 def displaySelectedEdgeData(data):
     return json.dumps(data, indent=2)
+
+df = pd.DataFrame(np.random.randn(100, 1), columns=['data'], index=pd.date_range('1/1/2020', periods=100))
+
+
+@app.callback(
+    dash.dependencies.Output('timeseries', 'figure'), 
+    [dash.dependencies.Input('date-picker', 'start_date'), dash.dependencies.Input('date-picker', 'end_date'), dash.dependencies.Input("aggregation", "value")])
+def update_chart(start, end, frequency):
+    dff = df.loc[start: end].resample(frequency).mean()
+    fig = px.line(dff, x=dff.index, y='data')
+    return fig
 
 
 
