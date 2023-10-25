@@ -25,9 +25,8 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # Read sample data
 np.random.seed(1)
-df = pd.DataFrame(np.random.randn(100, 1), columns=['data'], 
-                  index=pd.date_range('2020-01-01', periods=100))
-
+df = metr_la_network
+df.rename(columns={i: str(i) for i in range(207)}, inplace=True)
 # Get categories of sampel data set
 
 
@@ -140,7 +139,7 @@ app.layout = html.Div(children=[
                 [
                     # Timeserie                
                     dcc.Graph(id='timeseries', figure={
-                            'data': [go.Scatter(x=df.index, y=df["data"], mode='lines',)],
+                            'data': [go.Scatter(x=df.index, y=df["0"], mode='lines',)],
                             "layout": layout_time_series
                         }),
                     dcc.DatePickerRange(
