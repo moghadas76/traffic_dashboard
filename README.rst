@@ -54,4 +54,4 @@ Demo
 .. image:: https://postimg.cc/Hcm1BgKf
     :alt: Dashboar Timeseries
     :target: https://postimg.cc/Hcm1BgKf
-
+|
