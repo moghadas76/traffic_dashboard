@@ -21,3 +21,10 @@ def load_pkl(pickle_file: str) -> object:
         print("Unable to load data ", pickle_file, ":", e)
         raise
     return pickle_data
+
+if __name__ == "__main__":
+    from dashboard.utils.data_loader import JsonToPandas
+    df = JsonToPandas.bulk_load([
+        ])
+    print(df[df["key"] == "value"].head())
+    
