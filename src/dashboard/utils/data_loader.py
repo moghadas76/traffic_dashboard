@@ -26,7 +26,7 @@ class JsonToPandas:
             raise FileNotFoundError("BasicTS can not find data file {0}".format(json_file_path))
 
     def load(self):
-        df = pd.read_json(self.json_file_path)
+        df = pd.json_normalize(json.load(open(self.json_file_path, "r")))
         return df
     
     def load_json(self):
@@ -44,8 +44,11 @@ class JsonToPandas:
         for path in json_file_path:
             df = JsonToPandas(path).to_dataframe()
             dfs.append(df)
-        dfs = JsonToPandas.merge_dataframes(*dfs)
-        return dfs
+        if len(dfs)>1:
+            dfs = JsonToPandas.merge_dataframes(*dfs)
+            return dfs
+        else:
+            return dfs[0]
     
     def append_to_dataframe(self, df1, file_path):
         df = pd.read_json(file_path)
@@ -57,27 +60,35 @@ class JsonToPandas:
         df = pd.concat(df1)
         return df
     
-    def merge_dataframes(self, *df1):
-        df = pd.concat(df1)
-        return df
-    
     def save_as_paraquet(self, df, parquet_file_path: str):
         df.to_parquet(parquet_file_path)
 
-def load_dataframes():
+def load_dataframes(window=None, default_source="BXLBXL034165F1"):
     """
     Load dataframes from config file and filter out rows where "subtype" is "vehicle".
     This function does not take any parameters.
     Returns the filtered dataframe.
     """
+    def find_files(pattern):
+        import glob
+        if not pattern.endswith("/"):
+            pattern += "/"
+        list_of_files = sorted(glob.glob(f"{pattern}**/*.txt", recursive=True))
+        if window:
+            list_of_files = list_of_files[-window:]
+        return list_of_files
+
     config = OmegaConf.load("conf/production.yml")
-    df = JsonToPandas.bulk_load(config.raw_data_files)
+    df = JsonToPandas.bulk_load(find_files(config.raw_data_files))
     filter_out = df[df["subtype"] == "counting"]
-    locs = pd.DataFrame(filter_out.location.to_list())["coordinates"]
+    locs = pd.DataFrame(filter_out[["location.coordinates"]].to_dict())["location.coordinates"]
     filter_out["lat"] = locs.str[0]
     filter_out["lang"] = locs.str[1]
-    filter_out = filter_out.drop("location", axis=1)
-    filter_out = filter_out.drop("source", axis=1)
+    filter_out = filter_out.drop("location.coordinates", axis=1)
+    #filter_out = filter_out.drop("source", axis=1)
+    filter_out = filter_out[filter_out["source.id"] == default_source]
+    filter_out = filter_out[['_aggregation_id', '_start_timestamp', '_end_timestamp', 'count', "lat", "lang"]]
+    filter_out = filter_out.dropna()
     return filter_out
 
 def get_plotly_figure(df: pd.DataFrame):
@@ -85,7 +96,7 @@ def get_plotly_figure(df: pd.DataFrame):
     df['UTC_Time'] = pd.to_datetime(df['_start_timestamp'], utc=True)
     df['local_start_time'] = df['UTC_Time'].dt.tz_convert(config.TZ)
     agg = df[['local_start_time', 'count']].groupby('local_start_time')["count"].agg(["count", "sum"])
-    fig = px.line(agg, y=["sum"], title="Aggregated Traffic Count")
+    fig = px.line(agg, y=["sum"], title=f"Aggregated Traffic Count, Sum={agg['sum'].sum()}")
     fig.update_layout(
     xaxis=dict(
         rangeselector=dict(
@@ -112,6 +123,6 @@ def get_plotly_figure(df: pd.DataFrame):
     )
     )
     fig.update_layout(
-        title_text="Sum of Counts"
+        title_text=f"Aggregated Traffic Count, Sum={agg['sum'].sum()}, Len={len(df)}"
     )
     return fig

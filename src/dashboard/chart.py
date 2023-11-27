@@ -1,10 +1,7 @@
 import os
-import json
 import dash
 import numpy as np
-import pandas as pd
 import plotly.graph_objs as go
-import dash_cytoscape as cyto
 import plotly.express as px
 
 
@@ -12,9 +9,9 @@ from dotenv import load_dotenv
 from dash import dcc, ctx
 from dash import html
 from dash import dash_table
+from omegaconf import OmegaConf
 
 # from dashboard.assets import metr_la_network
-from dashboard.styles import styles
 from dashboard.utils.data_loader import load_dataframes, get_plotly_figure
 
 load_dotenv()
@@ -29,7 +26,8 @@ np.random.seed(1)
 # df = metr_la_network
 # df.rename(columns={i: str(i) for i in range(207)}, inplace=True)
 # Get categories of sampel data set
-df = load_dataframes()
+config = OmegaConf.load("conf/production.yml")
+df = load_dataframes(window=config.init_window)
 
 
 
@@ -68,24 +66,6 @@ layout_map = go.Layout(
             'pad': 0},
 )
 
-layout_time_series = go.Layout( colorway=["#5E0DAC", '#FF4F00', '#375CB1', '#FF7400', '#FFF400', '#FF0056'],
-                    height=600,
-                    title=f"Closing prices",
-                    xaxis={"title": "Date",
-                           'rangeselector': {'buttons': list([{'count': 1, 'label': '1M',
-                                                               'step': 'month',
-                                                               'stepmode': 'backward'},
-                                                              {'count': 6, 'label': '6M',
-                                                               'step': 'month',
-                                                               'stepmode': 'backward'},
-                                                              {'step': 'all'}]
-                                              ),  
-                           },
-                           'rangeslider': {'visible': True}, 
-                           'type': 'date',            
-                    },
-                    yaxis={"title": "Price (USD)"},
-)
 # Define dashboard layout
 app.layout = html.Div(children=[
     html.H1(children='Dashboard Spatio-Temporal Data'),
