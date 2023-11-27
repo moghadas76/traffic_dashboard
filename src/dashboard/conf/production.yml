@@ -1,0 +1,23 @@
+development:
+  debug: true
+  port: 8050
+
+production:
+  debug: false
+  port: 8050
+  ssl:
+    enabled: true
+    cert_path: /path/to/certificate.crt
+    key_path: /path/to/private_key.key
+
+database:
+  url: sqlite:///example.db
+
+api_keys:
+  plotly: your_plotly_api_key
+  other_api: your_other_api_key
+
+raw_data_files:
+  - /home/moghadas/toy_project_end_week/data_pipeline/ParquetDataLake/data/2023/11/9/raw_data.txt
+  - /home/moghadas/toy_project_end_week/data_pipeline/ParquetDataLake/data/2023/11/10/raw_data.txt
+TZ: Europe/Brussels
