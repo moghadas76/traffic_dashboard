@@ -69,6 +69,7 @@ layout_map = go.Layout(
 # Define dashboard layout
 app.layout = html.Div(children=[
     html.H1(children='Dashboard Spatio-Temporal Data'),
+    html.Button("Refresh", id="refresh-button", n_clicks=0),
     dash_table.DataTable(
         id='table',
         columns=[
