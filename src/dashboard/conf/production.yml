@@ -17,6 +17,6 @@ api_keys:
   plotly: your_plotly_api_key
   other_api: your_other_api_key
 
-raw_data_files: /home/seyed/forked/kafka-scripts/data/2023/
+raw_data_files: /media/moghadas/Elements/Brussel_mobility_NOV_2023/data/2023/
 init_window: 3
 TZ: Europe/Brussels

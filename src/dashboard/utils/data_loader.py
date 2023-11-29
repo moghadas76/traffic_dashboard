@@ -87,7 +87,7 @@ def load_dataframes(window=None, default_source="BXLBXL034165F1"):
     filter_out = filter_out.drop("location.coordinates", axis=1)
     #filter_out = filter_out.drop("source", axis=1)
     filter_out = filter_out[filter_out["source.id"] == default_source]
-    filter_out = filter_out[['_aggregation_id', '_start_timestamp', '_end_timestamp', 'count', "lat", "lang"]]
+    filter_out = filter_out[['_aggregation_id', '_start_timestamp', '_end_timestamp', 'count', "lat", "lang", "source.id"]]
     filter_out = filter_out.dropna()
     return filter_out
 
