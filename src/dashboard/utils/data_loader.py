@@ -123,6 +123,6 @@ def get_plotly_figure(df: pd.DataFrame):
     )
     )
     fig.update_layout(
-        title_text=f"Aggregated Traffic Count, Sum={agg['sum'].sum()}, Len={len(df)}"
+        title_text=f"Aggregated Traffic Count, Sum={agg['sum'].sum()}, Len of Sensors={len(df)}, "
     )
     return fig
